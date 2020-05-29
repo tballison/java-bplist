@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 
@@ -60,7 +61,7 @@ class FileHelper {
         try (InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             IOUtils.copy(input, output);
-            return new String(output.toByteArray());
+            return new String(output.toByteArray(), StandardCharsets.UTF_8);
         }
     }
 }

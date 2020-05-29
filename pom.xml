@@ -2,6 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<groupId>org.tallison</groupId>
 	<artifactId>bplist</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
@@ -9,7 +10,23 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+		<commons.io.version>2.6</commons.io.version>
+		<!-- plugin versions -->
+		<forbiddenapis.version>3.0</forbiddenapis.version>
+		<groovy.maven.version>2.1</groovy.maven.version>
+		<maven.antrun.version>1.8</maven.antrun.version>
+		<maven.assembly.version>3.1.0</maven.assembly.version>
+		<maven.bundle.version>4.1.0</maven.bundle.version>
+		<maven.failsafe.version>2.22.1</maven.failsafe.version>
+		<maven.javadoc.version>3.1.1</maven.javadoc.version>
+		<maven.scr.version>1.26.0</maven.scr.version>
+		<maven.surefire.version>3.0.0-M4</maven.surefire.version>
+		<maven.shade.version>3.2.1</maven.shade.version>
+		<rat.version>0.13</rat.version>
 	</properties>
 
 	<dependencies>
@@ -28,18 +45,159 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
+			<version>${commons.io.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+			<!--
+              mvn versions:display-plugin-updates
+              mvn versions:display-dependency-updates
+            -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<generateBackupPoms>false</generateBackupPoms>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.ossindex.maven</groupId>
+				<artifactId>ossindex-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<fail>false</fail>
+				</configuration>
+				<executions>
+					<execution>
+						<id>audit-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>audit</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- example of how to ignore coordinates
+                      <configuration>
+                          <excludeCoordinates>
+                              <exclude>
+                                  <groupId>com.h2database</groupId>
+                                  <artifactId>h2</artifactId>
+                                  <version>1.4.197</version>
+                              </exclude>
+                          </excludeCoordinates>
+                      </configuration>
+            -->
+
+			<plugin>
+				<groupId>de.thetaphi</groupId>
+				<artifactId>forbiddenapis</artifactId>
+				<version>${forbiddenapis.version}</version>
+				<configuration>
+					<targetVersion>${maven.compiler.target}</targetVersion>
+					<ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+					<failOnUnsupportedJava>false</failOnUnsupportedJava>
+					<excludes>test-documents/*.class</excludes>
+					<bundledSignatures>
+						<bundledSignature>jdk-unsafe</bundledSignature>
+						<bundledSignature>jdk-deprecated</bundledSignature>
+						<bundledSignature>jdk-non-portable</bundledSignature>
+						<bundledSignature>jdk-internal</bundledSignature>
+						<bundledSignature>commons-io-unsafe-${commons.io.version}</bundledSignature>
+					</bundledSignatures>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+							<goal>testCheck</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${maven.bundle.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version> <!-- versions greater than this don't like System.exit calls in tika-batch -->
+				<configuration>
+					<argLine>-Xmx3072m -Duser.timezone=UTC</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${maven.shade.version}</version>
+			</plugin>
+			<!-- assembly must happen after shade so that
+              tika-server's -bin.tgz/zip includes the uber jar
+              -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven.assembly.version}</version>
+				<configuration>
+					<tarLongFileMode>posix</tarLongFileMode>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>1.11.2</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-api</artifactId>
+						<version>1.11.2</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M3</version>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<configuration>
+							<rules>
+								<dependencyConvergence/>
+								<requireMavenVersion>
+									<version>3.3</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
-	<parent>
-		<groupId>nl.pvanassen</groupId>
-		<artifactId>parent</artifactId>
-		<version>1.2.6</version>
-	</parent>
+
 </project>

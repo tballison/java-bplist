@@ -3,8 +3,16 @@ package nl.pvanassen.bplist.parser;
 import java.util.*;
 
 class BPListDate implements BPListElement<Date> {
+
+    private final static Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"),
+            Locale.US);
+
+    static {
+        calendar.set(2001, 0, 1, 1, 0, 0);
+
+    }
     /** Time interval based dates are measured in seconds from 2001-01-01. */
-    private final static long TIMER_INTERVAL_TIMEBASE = new GregorianCalendar(2001, 0, 1, 1, 0, 0).getTimeInMillis();
+    private final static long TIMER_INTERVAL_TIMEBASE = calendar.getTimeInMillis();
 
     private final Date value;
 

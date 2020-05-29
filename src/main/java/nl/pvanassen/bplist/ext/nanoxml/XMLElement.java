@@ -32,6 +32,7 @@
 package nl.pvanassen.bplist.ext.nanoxml;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -547,7 +548,7 @@ public class XMLElement {
      */
     public void setAttribute(String name, Object value) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         attributes.put(name, value.toString());
     }
@@ -584,7 +585,7 @@ public class XMLElement {
      */
     public void setIntAttribute(String name, int value) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         attributes.put(name, Integer.toString(value));
     }
@@ -622,7 +623,7 @@ public class XMLElement {
      */
     public void setDoubleAttribute(String name, double value) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         attributes.put(name, Double.toString(value));
     }
@@ -821,7 +822,7 @@ public class XMLElement {
      */
     public Object getAttribute(String name, Object defaultValue) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         Object value = attributes.get(name);
         if (value == null) {
@@ -859,7 +860,7 @@ public class XMLElement {
      */
     public Object getAttribute(String name, Map<String, Object> valueSet, String defaultKey, boolean allowLiterals) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         String key = attributes.get(name);
         Object result;
@@ -1002,7 +1003,7 @@ public class XMLElement {
      */
     public int getIntAttribute(String name, int defaultValue) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         String value = attributes.get(name);
         if (value == null) {
@@ -1045,7 +1046,7 @@ public class XMLElement {
      */
     public int getIntAttribute(String name, Map<String, Object> valueSet, String defaultKey, boolean allowLiteralNumbers) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         Object key = attributes.get(name);
         Integer result;
@@ -1115,7 +1116,7 @@ public class XMLElement {
      */
     public double getDoubleAttribute(String name, double defaultValue) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         String value = attributes.get(name);
         if (value == null) {
@@ -1158,7 +1159,7 @@ public class XMLElement {
      */
     public double getDoubleAttribute(String name, Map<String, Object> valueSet, String defaultKey, boolean allowLiteralNumbers) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         Object key = attributes.get(name);
         Double result;
@@ -1209,7 +1210,7 @@ public class XMLElement {
      */
     public boolean getBooleanAttribute(String name, String trueValue, String falseValue, boolean defaultValue) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         Object value = attributes.get(name);
         if (value == null) {
@@ -1305,7 +1306,7 @@ public class XMLElement {
      */
     public void removeAttribute(String name) {
         if (ignoreCase) {
-            name = name.toUpperCase();
+            name = name.toUpperCase(Locale.US);
         }
         attributes.remove(name);
     }
@@ -1355,10 +1356,11 @@ public class XMLElement {
     public String toString() {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            OutputStreamWriter writer = new OutputStreamWriter(out);
+            OutputStreamWriter writer = new OutputStreamWriter(out,
+                    StandardCharsets.UTF_8);
             write(writer);
             writer.flush();
-            return new String(out.toByteArray());
+            return new String(out.toByteArray(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             // Java exception handling suxx
             return super.toString();

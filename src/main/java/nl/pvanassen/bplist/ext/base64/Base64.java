@@ -3,6 +3,7 @@ package nl.pvanassen.bplist.ext.base64;
 import static nl.pvanassen.bplist.ext.base64.Constants.*;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 
@@ -147,7 +148,7 @@ public class Base64 {
                 return new String(baos.toByteArray(), PREFERRED_ENCODING);
             } // end try
             catch (UnsupportedEncodingException uue) {
-                return new String(baos.toByteArray());
+                return new String(baos.toByteArray(), StandardCharsets.ISO_8859_1);
             } // end catch
         } // end if: compress
           // Else, don't compress. Better not to use streams at all then.
@@ -185,7 +186,7 @@ public class Base64 {
                 return new String(outBuff, 0, e, PREFERRED_ENCODING);
             } // end try
             catch (UnsupportedEncodingException uue) {
-                return new String(outBuff, 0, e);
+                return new String(outBuff, 0, e, StandardCharsets.UTF_8);
             } // end catch
 
         } // end else: don't compress
